@@ -39,8 +39,8 @@ func (h *httpClient) Get(ctx context.Context, url string, target interface{}) er
 		panic(fmt.Errorf("error while create a new request: %v", err))
 	}
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/110.0")
-
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	if h.Debug {
 		logger.Debug("%v: %s", "Request to", url)
 	}
@@ -73,12 +73,14 @@ func (h *httpClient) Post(ctx context.Context, url string, body io.Reader, targe
 	}
 
 	if contentType != "" && contentType == "form" {
-		req.Header.Add("Content-type", "application/x-www-form-urlencoded")
+		req.Header.Add("Content-type", "application/x-www-form-urlencoded; charset=UTF-8")
 	} else {
 		req.Header.Add("Content-type", "application/json")
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+	// subdivx dev, you're an idiot.
+	req.Header.Add("Cookie", "sdx=cgmbnkmlknnu390mcm6qhas6ht")
 
 	if h.Debug {
 		logger.Debug("%v: %s, payload: %v", "Request to", url, body)
