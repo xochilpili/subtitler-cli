@@ -205,7 +205,7 @@ func postRequest[T any](ctx context.Context, endpoint string, payload interface{
 	case *SubdivxSubPayload:
 		data.Add("tabla", p.Tabla)
 		data.Add("filtros", p.Filtros)
-		data.Add("buscar", p.Buscar)
+		data.Add("buscar21092024390", p.Buscar)
 	case *SubdivxCommentPayload:
 		data.Add("getComentarios", p.GetComments)
 	default:
