@@ -15,8 +15,8 @@ import (
 )
 
 type HttpClient interface {
-	Get(ctx context.Context, url string, target interface{}) error
-	Post(ctx context.Context, url string, body io.Reader, target interface{}, contentType string) error
+	Get(ctx context.Context, url string, target interface{}) (string, error)
+	Post(ctx context.Context, url string, body io.Reader, target interface{}, contentType string, cookie string) error
 	DownloadFile(ctx context.Context, url string, fileName string) (string, error)
 }
 
@@ -32,7 +32,7 @@ func New(debug bool) *httpClient {
 	}
 }
 
-func (h *httpClient) Get(ctx context.Context, url string, target interface{}) error {
+func (h *httpClient) Get(ctx context.Context, url string, target interface{}) (string, error) {
 	client := &http.Client{Timeout: h.Timeout}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -55,17 +55,18 @@ func (h *httpClient) Get(ctx context.Context, url string, target interface{}) er
 	if h.Debug {
 		respDump, _ := httputil.DumpResponse(resp, true)
 		logger.Debug("%v:\n%s", "RESPONSE", respDump)
+		logger.Debug("Got cookie: %s\n", resp.Header.Get("Set-Cookie"))
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&target)
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	return nil
+	cookie := resp.Header.Get("Set-Cookie")
+	return cookie, nil
 }
 
-func (h *httpClient) Post(ctx context.Context, url string, body io.Reader, target interface{}, contentType string) error {
+func (h *httpClient) Post(ctx context.Context, url string, body io.Reader, target interface{}, contentType string, cookie string) error {
 	client := &http.Client{Timeout: h.Timeout}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
@@ -80,7 +81,7 @@ func (h *httpClient) Post(ctx context.Context, url string, body io.Reader, targe
 
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 	// subdivx dev, you're an idiot.
-	req.Header.Add("Cookie", "sdx=cgmbnkmlknnu390mcm6qhas6ht")
+	req.Header.Add("Cookie", cookie)
 
 	if h.Debug {
 		logger.Debug("%v: %s, payload: %v", "Request to", url, body)

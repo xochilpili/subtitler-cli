@@ -77,15 +77,28 @@ func (s *service) FormatDownloadedFiles(files []*string) {
 	tbl.Render()
 }
 
+func (s *service) getSearchToken(ctx context.Context) Token {
+	var target Token
+
+	cookie, err := s.httpClient.Get(ctx, subdivxUrl+"/inc/gt.php?gt=1", &target)
+	if err != nil {
+		panic(fmt.Errorf("error getting token: %v", err))
+	}
+	target.Cookie = cookie
+	return target
+}
+
 func (s *service) GetSubtitles(ctx context.Context) []Subtitles {
+	token := s.getSearchToken(ctx)
 	payload := &SubdivxSubPayload{
 		Tabla:   "resultados",
 		Filtros: "",
 		Buscar:  s.settings.Title,
+		Token:   token.Token,
 	}
-
+	cookie := strings.Split(token.Cookie, ";")[0]
 	var target SubdivxResponse[SubData]
-	response, err := postRequest(ctx, subdivxUrl+"/inc/ajax.php", payload, &target, s.httpClient)
+	response, err := postRequest(ctx, subdivxUrl+"/inc/ajax.php", payload, &target, s.httpClient, cookie)
 	if err != nil {
 		panic(fmt.Errorf("error getting subtitles %v", err))
 	}
@@ -110,7 +123,7 @@ func (s *service) GetSubtitles(ctx context.Context) []Subtitles {
 			Cds:         item.Cds,
 		}
 
-		go s.GetComments(ctx, &subtitle, &waitGroup, subtitlesChan)
+		go s.GetComments(ctx, &subtitle, &waitGroup, subtitlesChan, cookie)
 	}
 	waitGroup.Wait()
 	close(subtitlesChan)
@@ -121,13 +134,13 @@ func (s *service) GetSubtitles(ctx context.Context) []Subtitles {
 	return subtitles
 }
 
-func (s *service) GetComments(ctx context.Context, subtitle *Subtitles, wg *sync.WaitGroup, c chan Subtitles) {
+func (s *service) GetComments(ctx context.Context, subtitle *Subtitles, wg *sync.WaitGroup, c chan Subtitles, cookie string) {
 	defer wg.Done()
 	payload := SubdivxCommentPayload{
 		GetComments: strconv.Itoa(int(subtitle.Id)),
 	}
 	var target SubdivxResponse[SubComments]
-	response, err := postRequest(ctx, subdivxUrl+"/inc/ajax.php", &payload, &target, s.httpClient)
+	response, err := postRequest(ctx, subdivxUrl+"/inc/ajax.php", &payload, &target, s.httpClient, cookie)
 	if err != nil {
 		panic(fmt.Errorf("unable to fetch comments for: %d, error: %v", subtitle.Id, err))
 	}
@@ -199,20 +212,21 @@ func (s *service) HighlightString(input string) string {
 
 }
 
-func postRequest[T any](ctx context.Context, endpoint string, payload interface{}, target T, httpClient httpclient.HttpClient) (T, error) {
+func postRequest[T any](ctx context.Context, endpoint string, payload interface{}, target T, httpClient httpclient.HttpClient, cookie string) (T, error) {
 	data := url.Values{}
 	switch p := payload.(type) {
 	case *SubdivxSubPayload:
 		data.Add("tabla", p.Tabla)
 		data.Add("filtros", p.Filtros)
-		data.Add("buscar21092024390", p.Buscar)
+		data.Add("buscar393", p.Buscar)
+		data.Add("token", p.Token)
 	case *SubdivxCommentPayload:
 		data.Add("getComentarios", p.GetComments)
 	default:
 		panic(fmt.Errorf("payload interface not supported"))
 	}
 
-	err := httpClient.Post(ctx, endpoint, strings.NewReader(data.Encode()), &target, "form")
+	err := httpClient.Post(ctx, endpoint, strings.NewReader(data.Encode()), &target, "form", cookie)
 	if err != nil {
 		return target, err
 	}

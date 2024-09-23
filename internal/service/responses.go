@@ -1,5 +1,10 @@
 package service
 
+type Token struct {
+	Cookie string `json:"cookie,omitempty"`
+	Token  string `json:"token"`
+}
+
 type SubComments struct {
 	Id      int    `json:"id"`
 	Comment string `json:"comentario"`
@@ -27,6 +32,7 @@ type SubdivxSubPayload struct {
 	Tabla   string `json:"tabla"`
 	Filtros string `json:"filtros,omitempty"`
 	Buscar  string `json:"buscar"`
+	Token   string `json:"token"`
 }
 
 type SubdivxCommentPayload struct {
