@@ -139,7 +139,6 @@ func (s *subdivx) GetSubtitles(ctx context.Context) ([]Subtitles, error) {
 		if err != nil{
 			return false
 		}
-		fmt.Printf("retry: %t, data: %+v\n", ok == 0, len(result.Data))
 		return ok == 0
 	})
 	
