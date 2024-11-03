@@ -26,6 +26,7 @@ type SubdivxResponse[T any] struct {
 	ITotalRecords        int    `json:"iTotalRecords"`
 	ITotalDisplayRecords int    `json:"iTotalDisplayRecords"`
 	Data                 []T    `json:"aaData"`
+	Message				string `json:"mensaje,omitempty"`
 }
 
 type SubdivxSubPayload struct {

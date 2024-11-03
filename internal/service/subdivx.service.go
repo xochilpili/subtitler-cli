@@ -80,7 +80,7 @@ func (s *service) FormatDownloadedFiles(files []*string) {
 func (s *service) getSearchToken(ctx context.Context) Token {
 	var target Token
 
-	cookie, err := s.httpClient.Get(ctx, subdivxUrl+"/inc/gt.php?gt=1", &target)
+	cookie, err := s.httpClient.Get(ctx, subdivxUrl+"inc/gt.php?gt=1", &target)
 	if err != nil {
 		panic(fmt.Errorf("error getting token: %v", err))
 	}
@@ -140,7 +140,7 @@ func (s *service) GetComments(ctx context.Context, subtitle *Subtitles, wg *sync
 		GetComments: strconv.Itoa(int(subtitle.Id)),
 	}
 	var target SubdivxResponse[SubComments]
-	response, err := postRequest(ctx, subdivxUrl+"/inc/ajax.php", &payload, &target, s.httpClient, cookie)
+	response, err := postRequest(ctx, subdivxUrl+"inc/ajax.php", &payload, &target, s.httpClient, cookie)
 	if err != nil {
 		panic(fmt.Errorf("unable to fetch comments for: %d, error: %v", subtitle.Id, err))
 	}
@@ -170,8 +170,8 @@ func (s *service) GetComments(ctx context.Context, subtitle *Subtitles, wg *sync
 
 func (s *service) DownloadSubtitle(ctx context.Context, id int) error {
 	subtitleId := strconv.Itoa(int(id))
-	logger.Info("%s from: %v", "downloading file", subdivxUrl+"/descargar.php?id="+subtitleId)
-	downloadedFile, err := s.httpClient.DownloadFile(ctx, subdivxUrl+"/descargar.php?id="+subtitleId, s.settings.DownloadPath+"/"+subtitleId)
+	logger.Info("%s from: %v", "downloading file", subdivxUrl+"descargar.php?id="+subtitleId)
+	downloadedFile, err := s.httpClient.DownloadFile(ctx, subdivxUrl+"descargar.php?id="+subtitleId, s.settings.DownloadPath+"/"+subtitleId)
 	if err != nil {
 		return err
 	}
@@ -218,7 +218,7 @@ func postRequest[T any](ctx context.Context, endpoint string, payload interface{
 	case *SubdivxSubPayload:
 		data.Add("tabla", p.Tabla)
 		data.Add("filtros", p.Filtros)
-		data.Add("buscar393", p.Buscar)
+		data.Add("buscar397c", p.Buscar)
 		data.Add("token", p.Token)
 	case *SubdivxCommentPayload:
 		data.Add("getComentarios", p.GetComments)

@@ -14,15 +14,21 @@ import (
 	"github.com/xochilpili/subtitler-cli/internal/service"
 )
 
+type Subdivx interface {
+	FormatSubtitles(subtitles []service.Subtitles)
+	GetSubtitles(ctx context.Context) ([]service.Subtitles, error)
+	DownloadSubtitle(ctx context.Context, subtitleId int) error
+}
+
 type Menu struct {
 	settings  *flags.OptionFlags
-	service   service.Subdivx
+	service   Subdivx
 	subtitles []service.Subtitles
 }
 
 func New(ctx context.Context, settings *flags.OptionFlags) *Menu {
-	service := service.New(settings)
-	subtitles := service.GetSubtitles(ctx)
+	service := service.NewSub(settings)
+	subtitles, _ := service.GetSubtitles(ctx)
 	return &Menu{
 		settings:  settings,
 		service:   service,

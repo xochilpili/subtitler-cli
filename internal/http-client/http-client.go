@@ -84,7 +84,7 @@ func (h *httpClient) Post(ctx context.Context, url string, body io.Reader, targe
 	req.Header.Add("Cookie", cookie)
 
 	if h.Debug {
-		logger.Debug("%v: %s, payload: %v", "Request to", url, body)
+		logger.Debug("%v: %s, payload: %+v", "Request to", url, body)
 	}
 
 	resp, err := client.Do(req)
